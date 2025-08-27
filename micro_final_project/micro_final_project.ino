@@ -25,28 +25,24 @@ int Buzzer = 1; //要不要用蜂鳴器
 int degree = 90;
 int endcode;
 
-char ssid[] = "Jason";      //  your network SSID (name)
-char pass[] = "Jason921104";   // your network password
+char ssid[] = "Jason";      
+char pass[] = "Jason921104";   
 
 int status = WL_IDLE_STATUS;
 WiFiServer server(80);
 
 void printWifiStatus() {
-  // print the SSID of the network you're attached to:
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
 
-  // print your WiFi shield's IP address:
   IPAddress ip = WiFi.localIP();
   Serial.print("IP Address: ");
   Serial.println(ip);
 
-  // print the received signal strength:
   long rssi = WiFi.RSSI();
   Serial.print("signal strength (RSSI):");
   Serial.print(rssi);
   Serial.println(" dBm");
-  // print where to go in a browser:
   Serial.print("To see this page in action, open a browser to http://");
   Serial.println(ip);
 }
@@ -74,7 +70,6 @@ void rotate(int LFpulse, int RFpulse, int LBpulse, int RBpulse){
   noInterrupts(); // 停止中斷
   
   for(i=0; i<50; i++){
-    
     digitalWrite(LFservoPin, HIGH);
     delayMicroseconds(LFpulse);
     digitalWrite(LFservoPin, LOW);
@@ -95,8 +90,6 @@ void rotate(int LFpulse, int RFpulse, int LBpulse, int RBpulse){
 
 void rotation_rate(char level){
       switch(level){  
-        //  fast <- slow 右往前500 ~ 1400 
-        //  slow -> fast 左往前1600 ~ 2400 
         case 0: break;
         case 1: rotate(1600,1400,1900,1300); break; //前進
         case 2: rotate(1400,1600,1100,1750); break; //後退
@@ -119,11 +112,11 @@ void ServoControl(int degree) {
 }
 
 void setup() {
-  Serial.begin(9600);      // initialize serial communication
+  Serial.begin(9600);      
   
   if (WiFi.status() == WL_NO_SHIELD) {
     Serial.println("WiFi shield not present");
-    while (true);       // don't continue
+    while (true);       
   }
 
   String fv = WiFi.firmwareVersion();
@@ -131,19 +124,15 @@ void setup() {
     Serial.println("Please upgrade the firmware");
   }
 
-  // attempt to connect to Wifi network:
   while (status != WL_CONNECTED) {
     Serial.print("Attempting to connect to Network named: ");
-    Serial.println(ssid);                   // print the network name (SSID);
+    Serial.println(ssid);                   
 
-    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-    
     status = WiFi.begin(ssid, pass);
-    // wait 10 seconds for connection:
     delay(10000);
   }
-  server.begin();                           // start the web server on port 80
-  printWifiStatus();                        // you're connected now, so print out the status
+  server.begin();                           
+  printWifiStatus();                        
 
   //人體 蜂鳴器
   pinMode(Human_Buzzer, INPUT);
@@ -166,24 +155,19 @@ void setup() {
   pinMode(servoPin_180, OUTPUT);
 }
 void loop() {
-  WiFiClient client = server.available();   // listen for incoming clients
-  if (client) {                             // if you get a client,
-    Serial.println("WIFI Demo");           // print a message out the serial port
-    String currentLine = "";                // make a String to hold incoming data from the client
-    while (client.connected()) {            // loop while the client's connected
-      if (client.available()) {             // if there's bytes to read from the client,
-        char c = client.read();             // read a byte, then
-        Serial.write(c);                    // print it out the serial monitor
-        if (c == '\n') {                    // if the byte is a newline character
-          // if the current line is blank, you got two newline characters in a row.
-          // that's the end of the client HTTP request, so send a response:
+  WiFiClient client = server.available();   
+  if (client) {                             
+    Serial.println("WIFI Demo");           
+    String currentLine = "";                
+    while (client.connected()) {            
+      if (client.available()) {             
+        char c = client.read();             
+        Serial.write(c);                    
+        if (c == '\n') {                    
           if (currentLine.length() == 0) {
-            // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
-            // and a content-type so the client knows what's coming, then a blank line:
             client.println("HTTP/1.1 200 OK");
             client.println("Content-type:text/html");
             client.println();
- // the content of the HTTP response follows the header:
             client.print("<font color=\"blue\" size=\"7\">======== WIFI DEMO ========</font><br>");
             client.print("<br><br>");
             client.print("<button style=\"font-size: 28px;\"><a href=\"-1\">ON/OFF</a></button><br>");
@@ -207,91 +191,88 @@ void loop() {
             client.print("<button style=\"font-size: 28px;\"><a href=\"8\">135</a></button><br>");
             client.print("<br><br>"); 
 
-            // The HTTP response ends with another blank line:
             client.println();
-            // break out of the while loop:
             break;
-          } else {    // if you got a newline, then clear currentLine:
+          } else {    
             currentLine = "";
           }
-        } else if (c != '\r') {  // if you got anything else but a carriage return character,
-          currentLine += c;      // add it to the end of the currentLine
+        } else if (c != '\r') {  
+          currentLine += c;      
         }
         if (currentLine.endsWith("GET /-1")) {
-          noInterrupts(); // 停止中斷
+          noInterrupts(); 
           start = !start;
-          interrupts(); // 恢復中斷
+          interrupts(); 
         }
         else if (currentLine.endsWith("GET /0")) {
-          noInterrupts(); // 停止中斷
+          noInterrupts(); 
           if(start){
             Buzzer = !Buzzer;
             shout = 0;
           }
-          interrupts(); // 恢復中斷
+          interrupts(); 
         }
         else if (currentLine.endsWith("GET /1")) {
-          noInterrupts(); // 停止中斷
+          noInterrupts(); 
           if(start){
             level = 0;
           }
-          interrupts(); // 恢復中斷
+          interrupts(); 
         }
         else if (currentLine.endsWith("GET /2")) {
-          noInterrupts(); // 停止中斷
+          noInterrupts(); 
           if(start){
             level = 1;
           }
-          interrupts(); // 恢復中斷
+          interrupts(); 
         }
         else if (currentLine.endsWith("GET /3")) {
-          noInterrupts(); // 停止中斷
+          noInterrupts(); 
           if(start){
             level = 2;
           }
-          interrupts(); // 恢復中斷
+          interrupts(); 
         }
         else if (currentLine.endsWith("GET /4")) {
-          noInterrupts(); // 停止中斷
+          noInterrupts(); 
           if(start){
             level = 3;
           }
-          interrupts(); // 恢復中斷
+          interrupts(); 
         }
         else if (currentLine.endsWith("GET /5")) {
-          noInterrupts(); // 停止中斷
+          noInterrupts(); 
           if(start){
             level = 4;
           }
-          interrupts(); // 恢復中斷
+          interrupts(); 
         }
         else if (currentLine.endsWith("GET /6")) {
           Serial.println("Received request to set angle to 45 degrees.");
-          noInterrupts(); // 停止中斷
+          noInterrupts(); 
           if(start){
             degree = 45;
           }
-          interrupts(); // 恢復中斷
+          interrupts(); 
         }
         else if (currentLine.endsWith("GET /7")) {
           Serial.println("Received request to set angle to 90 degrees.");
-          noInterrupts(); // 停止中斷
+          noInterrupts(); 
           if(start){
             degree = 90;
           }
-          interrupts(); // 恢復中斷
+          interrupts(); 
         }
         else if (currentLine.endsWith("GET /8")) {
           Serial.println("Received request to set angle to 135 degrees.");
-          noInterrupts(); // 停止中斷
+          noInterrupts(); 
           if(start){
             degree = 135;
           }
-          interrupts(); // 恢復中斷
+          interrupts(); 
         }
       }
     }
-    // close the connection:
     client.stop();
     delay(500);
     Serial.println("cdis");
